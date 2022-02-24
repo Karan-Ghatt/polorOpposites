@@ -1,0 +1,9 @@
+beautifulsoup4
+pandas
+selenium
+news-please
+newspaper3k
+fake_useragent
+chromedriver-binary
+unidecode
+cchardet
