@@ -17,17 +17,16 @@ import dash_html_components as html
 import dash_bootstrap_components as dbc
 
 
-from sqlalchemy import create_engine
+import sqlalchemy as db
 
-
-
-
-
-
+engine = db.create_engine('sqlite://', echo=False)
 
 
 
 analyzer = SentimentIntensityAnalyzer()
+
+
+news_source = []
 
 headlines = []
 headlines_tb_subjectivity = []
@@ -57,6 +56,10 @@ def search_function(topic, source):
         raw_data = newspaper(post)
         headline = raw_data.headline
         article = raw_data.article
+
+
+        # News Source
+        news_source.append(source)
 
         blob_headline = TextBlob(headline)
         headlines.append(headline)
@@ -92,7 +95,8 @@ def search_function(topic, source):
     print(f"{number_of_record_returned} record returned")
 
 
-    df = pd.DataFrame(list(zip(headlines,
+    df = pd.DataFrame(list(zip(news_source,
+                               headlines,
                                headlines_tb_subjectivity,
                                headlines_tb_polarity,
                                headlines_vs_subjectivity,
@@ -100,7 +104,8 @@ def search_function(topic, source):
                                article_tb_subjectivity,
                                article_tb_polarity,
                                article_vs_subjectivity)),
-                      columns=['headline',
+                      columns=['news_source',
+                               'headline',
                                'headline_tb_subj',
                                'headline_tb_pola',
                                'headline_vad_comp',
@@ -172,6 +177,8 @@ def search_function(topic, source):
     df = df.assign(article_vad_comp_score=df.apply(set_article_vad_comp_score, axis=1))
 
     sorted_df = df.sort_values(by=['article_vad_comp'])
+
+    sorted_df.to_sql('results_table', con = engine, if_exists='append')
     print(sorted_df)
 
 
@@ -179,4 +186,8 @@ def search_function(topic, source):
 
 search_function('Ukraine', 'BBC NEWS')
 search_function('Ukraine', 'FOX NEWS')
+
+query = engine.execute("SELECT * FROM results_table").fetchall()
+
+print(str(query))
 
