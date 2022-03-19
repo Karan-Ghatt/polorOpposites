@@ -10,11 +10,13 @@ import openpyxl
 import pandas as pd
 import numpy as np
 
-from dash import Dash, html, dcc, Input, Output
+from dash import Dash, html, dcc, Input, Output, State
 import plotly.express as px
 import dash
-import dash_html_components as html
+from dash import html
 import dash_bootstrap_components as dbc
+from dash.exceptions import PreventUpdate
+
 
 app = dash.Dash(__name__,  external_stylesheets=[dbc.themes.BOOTSTRAP])
 
@@ -42,12 +44,13 @@ search_box = html.Div(
             [
                 dbc.Row(
                     [dcc.Textarea(
-        id='textarea-state-example',
-        value='Topic Search Box',
-        style={'width': '100%', 'height': 50},
+                    id='textarea-state-example',
+                    value='Search Topic',
+                    style={'width': '100%', 'height': 50},
     ),
     html.Button('Search', id='submit_search', n_clicks=0)]
                 ),
+    html.Div(id='textarea-state-example-output', style={'whiteSpace': 'pre-line'})
             ]
         )
     ])
@@ -148,6 +151,38 @@ app.layout = html.Div(children=[
     search_box,
     main_body,
 ])
+
+@app.callback(
+
+    # Search Box
+    Output('textarea-state-example-output', 'children'),
+
+    # Drop down 1
+    Output("page2-dropdown", "children"),
+
+    # search box
+    Input('submit_search', 'n_clicks'),
+
+    # Dropdown
+    Input("page2-dropdown", "value"),
+
+    # submit button
+    State('textarea-state-example', 'value')
+)
+
+
+
+def update_output(n_clicks, value, search_value, dd_value):
+
+    if not search_value:
+        raise PreventUpdate
+    if n_clicks > 0:
+        print('Search Topic: \n{}'.format(value))
+        print(f'Drop Down: {dd_value}')
+
+
+
+
 
 if __name__ == '__main__':
     app.run_server(debug=False)

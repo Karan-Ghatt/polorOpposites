@@ -1,10 +1,10 @@
 #!c:\users\karan\pycharmprojects\opposingpoints\venv\scripts\python.exe
-# EASY-INSTALL-ENTRY-SCRIPT: 'chromedriver-binary==97.0.4692.71.0','console_scripts','chromedriver-path'
+# EASY-INSTALL-ENTRY-SCRIPT: 'chromedriver-binary==99.0.4844.51.0','console_scripts','chromedriver-path'
 import re
 import sys
 
 # for compatibility with easy_install; see #2198
-__requires__ = 'chromedriver-binary==97.0.4692.71.0'
+__requires__ = 'chromedriver-binary==99.0.4844.51.0'
 
 try:
     from importlib.metadata import distribution
@@ -30,4 +30,4 @@ globals().setdefault('load_entry_point', importlib_load_entry_point)
 
 if __name__ == '__main__':
     sys.argv[0] = re.sub(r'(-script\.pyw?|\.exe)?$', '', sys.argv[0])
-    sys.exit(load_entry_point('chromedriver-binary==97.0.4692.71.0', 'console_scripts', 'chromedriver-path')())
+    sys.exit(load_entry_point('chromedriver-binary==99.0.4844.51.0', 'console_scripts', 'chromedriver-path')())

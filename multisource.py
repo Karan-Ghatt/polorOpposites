@@ -4,30 +4,25 @@ from newsfetch.news import newspaper
 
 from textblob import TextBlob
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-import matplotlib
-import openpyxl
-
 import pandas as pd
-import numpy as np
-
-from dash import Dash, html, dcc, Input, Output
-import plotly.express as px
-import dash
-import dash_html_components as html
-import dash_bootstrap_components as dbc
 
 
-from sqlalchemy import create_engine
+#import numpy as np
+#import matplotlib
+#import openpyxl
 
 
+import sqlalchemy as db
 
-
-
-
+engine = db.create_engine('sqlite://', echo=False)
 
 
 
 analyzer = SentimentIntensityAnalyzer()
+
+sentiment_list = []
+
+news_source = []
 
 headlines = []
 headlines_tb_subjectivity = []
@@ -40,10 +35,10 @@ article_tb_polarity = []
 article_vs_subjectivity = []
 
 
-def search_function(topic, source):
+def search_function(sentiment, topic, source):
 
     sources_dict = {
-        'BBC NEWS': 'https://www.bbc.co.uk/news',
+        'BBC NEWS': 'https://www.bbc.co.uk/news/',
         'FOX NEWS': 'https://www.foxnews.com/',
         'CNN': '',
         'CNBC': ''
@@ -57,6 +52,13 @@ def search_function(topic, source):
         raw_data = newspaper(post)
         headline = raw_data.headline
         article = raw_data.article
+
+
+        # Sentiment From Source
+        sentiment_list.append(sentiment)
+
+        # News Source
+        news_source.append(source)
 
         blob_headline = TextBlob(headline)
         headlines.append(headline)
@@ -92,7 +94,9 @@ def search_function(topic, source):
     print(f"{number_of_record_returned} record returned")
 
 
-    df = pd.DataFrame(list(zip(headlines,
+    df = pd.DataFrame(list(zip(sentiment_list,
+                               news_source,
+                               headlines,
                                headlines_tb_subjectivity,
                                headlines_tb_polarity,
                                headlines_vs_subjectivity,
@@ -100,7 +104,9 @@ def search_function(topic, source):
                                article_tb_subjectivity,
                                article_tb_polarity,
                                article_vs_subjectivity)),
-                      columns=['headline',
+                      columns=['sentiment',
+                               'news_source',
+                               'headline',
                                'headline_tb_subj',
                                'headline_tb_pola',
                                'headline_vad_comp',
@@ -170,13 +176,43 @@ def search_function(topic, source):
             return "negative"
 
     df = df.assign(article_vad_comp_score=df.apply(set_article_vad_comp_score, axis=1))
-
     sorted_df = df.sort_values(by=['article_vad_comp'])
-    print(sorted_df)
+    sorted_df.to_sql('results_table', con = engine, if_exists='append')
 
 
 
-
-search_function('Ukraine', 'BBC NEWS')
-search_function('Ukraine', 'FOX NEWS')
+# search_topic = 'China'
+# news_site = ['BBC NEWS', 'FOX NEWS']
+#
+# search_function('Positive',search_topic, news_site[0])
+# search_function('Negative',search_topic, news_site[1])
+#
+#
+#
+# positive_data_query = pd.read_sql(
+# f"""
+# SELECT * FROM
+# results_table
+# WHERE news_source = '{str(news_site[0])}'
+# AND article_vad_comp = (SELECT MAX(article_vad_comp)
+#                         FROM results_table
+#                         WHERE news_source = '{str(news_site[0])}' )
+# LIMIT 1
+# """, engine)
+# print('POSITIVE')
+# print(positive_data_query)
+#
+#
+# negative_data_query = pd.read_sql(
+# f"""
+# SELECT * FROM
+# results_table
+# WHERE news_source = '{str(news_site[1])}'
+# AND article_vad_comp = (SELECT MIN(article_vad_comp)
+#                         FROM results_table
+#                         WHERE news_source = '{str(news_site[1])}')
+# LIMIT 1
+# """, engine)
+# print('NEGATIVE')
+# print(negative_data_query)
 
