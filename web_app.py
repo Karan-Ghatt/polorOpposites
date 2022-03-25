@@ -15,6 +15,7 @@ import pandas as pd
 import sqlalchemy as db
 
 
+
 engine = db.create_engine('sqlite://', echo=False)
 analyzer = SentimentIntensityAnalyzer()
 
@@ -37,8 +38,8 @@ def search_function(sentiment, topic, source):
     sources_dict = {
         'BBC NEWS': 'https://www.bbc.co.uk/news/',
         'FOX NEWS': 'https://www.foxnews.com/',
-        'CNN': '',
-        'CNBC': ''
+        'CNN': 'https://edition.cnn.com/',
+        'CNBC': 'https://www.cnbc.com/world/?region=world'
     }
 
     search = google_search(topic, sources_dict.get(source))
@@ -184,7 +185,8 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.MORPH])
 
 
 navbar = html.Header([
-                    html.H1("Polor Opposite"),
+                    html.H1("PolarOpposites"),
+                    html.H4("See both sides, side by side")
                 ], style={"margin-left": "15px"}
                 )
 
@@ -195,9 +197,10 @@ card_six = dbc.Card([
     dbc.CardBody([
         dcc.Dropdown(id='positive_source',
                      style={'color': 'black'},
-                     options=[{'label': 'KS', 'value': '1'},
-                                {'label': 'OH', 'value': '2'},
-                                {'label': 'NJ', 'value': '3'},
+                     options=[{'label': 'BBC News', 'value': 'BBC NEWS'},
+                                {'label': 'Fox News', 'value': 'FOX NEWS'},
+                                {'label': 'CNN', 'value': 'CNN'},
+                                {'label': 'CNBC', 'value': 'CNBC'},
                                 ],
                      value='')
     ])
@@ -208,10 +211,11 @@ card_one = dbc.Card([
     dbc.CardBody([
         dcc.Dropdown(id='negative_source',
                      style={'color': 'black'},
-                     options=[{'label': '415', 'value': '415'},
-                              {'label': '408', 'value': '408'},
-                              {'label': '510', 'value':'510'},
-                              ],
+                     options=[{'label': 'BBC News', 'value': 'BBC NEWS'},
+                                {'label': 'Fox News', 'value': 'FOX NEWS'},
+                                {'label': 'CNN', 'value': 'CNN'},
+                                {'label': 'CNBC', 'value': 'CNBC'},
+                                ],
                      value='')
     ])
 ])
@@ -219,7 +223,7 @@ card_one = dbc.Card([
 card_five = dbc.Card([
     dbc.CardHeader("Search Topic"),
     dbc.CardBody([
-        dcc.Input(id='search_topic', value='10', type="search")
+        dcc.Input(id='search_topic', type="search")
     ])
 ])
 
@@ -229,21 +233,30 @@ card_five = dbc.Card([
 output_card = dbc.Card([
     dbc.CardHeader("Positive Sentiment"),
     dbc.CardBody([
-        html.Div(id="my_output")]
+        html.H4(id='pos_headline_output'),
+        html.H6(id="pos_comp_score_output"),
+        html.P(id='pos_article')], style={"maxHeight": "450px", "overflow": "scroll"}
     )],
     color="white",
     inverse=False,
-    className="w-75 mb-3")
+    className="w-75 mb-3"
+    )
 
 
 output_card_2 = dbc.Card([
     dbc.CardHeader("Negative Sentiment"),
     dbc.CardBody([
-        html.Div(id="my_output_2")]
+        html.H4(id="neg_headline_output"),
+        html.H6(id="neg_comp_score_output"),
+        html.P(id='neg_article')], style= {"maxHeight": "450px", "overflow": "scroll"}
     )],
     color="dark",
     inverse=False,
     className="w-75 mb-3")
+
+
+
+
 
 
 app.layout = html.Div([
@@ -262,9 +275,14 @@ app.layout = html.Div([
 
     html.Br(),
 
+
+    html.Br(),
+
+
+
     html.Center([
         dbc.Row([
-            dbc.Col(dbc.Button("Analyse", id='button', n_clicks=None)),
+            dbc.Col(dbc.Button("Analyse", id='analyse_button', n_clicks=0)),
             dbc.Col(dbc.Button('Reset', id='reset_button', n_clicks=0))
         ])
     ]),
@@ -275,23 +293,34 @@ app.layout = html.Div([
         dbc.Row([
             dbc.Col(output_card),
             dbc.Col(output_card_2)])
-    ]),
+    ])
 
 ])
 
+
+
+
 @app.callback(
     [
-        Output(component_id='my_output', component_property='children'),
-        Output(component_id='my_output_2', component_property='children')
+        Output(component_id='pos_headline_output', component_property='children'),
+        Output(component_id='pos_comp_score_output', component_property='children'),
+        Output(component_id='pos_article', component_property='children'),
+
+        Output(component_id='neg_headline_output', component_property='children'),
+        Output(component_id='neg_comp_score_output', component_property='children'),
+        Output(component_id='neg_article', component_property='children')
+
     ],
     [
         Input(component_id='positive_source', component_property='value'),
         Input(component_id='negative_source', component_property='value'),
         Input(component_id='search_topic', component_property='value'),
 
-        Input(component_id='button', component_property='n_clicks')
+
+        Input(component_id='analyse_button', component_property='n_clicks')
     ]
 )
+
 
 def update_output_div(positive_source, negative_source, search_topic,
                       n):
@@ -303,8 +332,8 @@ def update_output_div(positive_source, negative_source, search_topic,
         print(f"Search Topic: {search_topic}")
 
         # TESTING TOPICS AND SOURCES
-        search_topic = 'Kanye West'
-        news_site = ['BBC NEWS', 'FOX NEWS']
+        # search_topic = 'Kanye West'
+        news_site = [positive_source, negative_source]
 
         # MAIN FUNC
         search_function('Positive', search_topic, news_site[0])
@@ -340,8 +369,21 @@ def update_output_div(positive_source, negative_source, search_topic,
 
         # selecting single value from df
 
+        pos_headline = positive_data_query.iat[0, 3]
+        pos_article = positive_data_query.iat[0, 7]
+        pos_comp_score = positive_data_query.iat[0, 10]
+        pos_comp_score_op = f'''Sentiment Score: {str(pos_comp_score)}'''
 
-        return f"Output: {positive_data_query}", f"Output 2: {negative_data_query}"
+        neg_headline = negative_data_query.iat[0, 3]
+        neg_article = negative_data_query.iat[0, 7]
+        neg_comp_score = negative_data_query.iat[0, 10]
+        neg_comp_score_op = f'''Sentiment Score: {str(neg_comp_score)}'''
+
+
+
+
+        return pos_headline, pos_comp_score_op, pos_article, \
+               neg_headline, neg_comp_score_op, neg_article,
     else:
         raise PreventUpdate
 
@@ -349,11 +391,20 @@ def update_output_div(positive_source, negative_source, search_topic,
 
 
 
+@app.callback(
+    Output('analyse_button','n_clicks'),
 
-@app.callback(Output('button','n_clicks'),
-             [Input('reset_button','n_clicks')])
+    [Input('reset_button','n_clicks')]
+)
 def update(reset):
     return 0
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':

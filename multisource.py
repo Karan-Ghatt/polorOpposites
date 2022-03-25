@@ -40,8 +40,9 @@ def search_function(sentiment, topic, source):
     sources_dict = {
         'BBC NEWS': 'https://www.bbc.co.uk/news/',
         'FOX NEWS': 'https://www.foxnews.com/',
-        'CNN': '',
-        'CNBC': ''
+        'CNN': 'https://edition.cnn.com/',
+        'CNBC': 'https://www.cnbc.com/world/?region=world',
+        'SKY NEWS UK': 'https://news.sky.com/uk'
     }
 
     search = google_search(topic, sources_dict.get(source))
@@ -181,38 +182,38 @@ def search_function(sentiment, topic, source):
 
 
 
-# search_topic = 'China'
-# news_site = ['BBC NEWS', 'FOX NEWS']
-#
-# search_function('Positive',search_topic, news_site[0])
-# search_function('Negative',search_topic, news_site[1])
-#
-#
-#
-# positive_data_query = pd.read_sql(
-# f"""
-# SELECT * FROM
-# results_table
-# WHERE news_source = '{str(news_site[0])}'
-# AND article_vad_comp = (SELECT MAX(article_vad_comp)
-#                         FROM results_table
-#                         WHERE news_source = '{str(news_site[0])}' )
-# LIMIT 1
-# """, engine)
-# print('POSITIVE')
-# print(positive_data_query)
-#
-#
-# negative_data_query = pd.read_sql(
-# f"""
-# SELECT * FROM
-# results_table
-# WHERE news_source = '{str(news_site[1])}'
-# AND article_vad_comp = (SELECT MIN(article_vad_comp)
-#                         FROM results_table
-#                         WHERE news_source = '{str(news_site[1])}')
-# LIMIT 1
-# """, engine)
-# print('NEGATIVE')
-# print(negative_data_query)
+search_topic = 'China'
+news_site = ['SKY NEWS UK', 'CNN']
+
+search_function('Positive',search_topic, news_site[0])
+search_function('Negative',search_topic, news_site[1])
+
+
+
+positive_data_query = pd.read_sql(
+f"""
+SELECT * FROM
+results_table
+WHERE news_source = '{str(news_site[0])}'
+AND article_vad_comp = (SELECT MAX(article_vad_comp)
+                        FROM results_table
+                        WHERE news_source = '{str(news_site[0])}' )
+LIMIT 1
+""", engine)
+print('POSITIVE')
+print(positive_data_query)
+
+
+negative_data_query = pd.read_sql(
+f"""
+SELECT * FROM
+results_table
+WHERE news_source = '{str(news_site[1])}'
+AND article_vad_comp = (SELECT MIN(article_vad_comp)
+                        FROM results_table
+                        WHERE news_source = '{str(news_site[1])}')
+LIMIT 1
+""", engine)
+print('NEGATIVE')
+print(negative_data_query)
 

@@ -181,7 +181,7 @@ def search_function(sentiment, topic, source):
 
 
 
-search_topic = 'China'
+search_topic = 'vladimir putin'
 news_site = ['BBC NEWS', 'FOX NEWS']
 
 search_function('Positive',search_topic, news_site[0])
@@ -216,3 +216,24 @@ LIMIT 1
 print('NEGATIVE')
 print(negative_data_query)
 
+
+pos_headline = positive_data_query.iat[0,3]
+pos_article = positive_data_query.iat[0,7]
+pos_comp_score = positive_data_query.iat[0,10]
+
+neg_headline = negative_data_query.iat[0,3]
+neg_article = negative_data_query.iat[0,7]
+neg_comp_score = negative_data_query.iat[0,10]
+
+
+print(f'''
+        Pos Headline: {pos_headline}
+        Pos Comp Score: {pos_comp_score}
+        Pos Article: {pos_article}''')
+
+print("##########")
+
+print(f'''
+        Pos Headline: {neg_headline}
+        Pos Comp Score: {neg_comp_score}
+        Pos Article: {neg_article}''')
