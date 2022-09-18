@@ -181,8 +181,7 @@ def search_function(sentiment, topic, source):
     sorted_df.to_sql('results_table', con = engine, if_exists='append')
 
 
-
-search_topic = 'China'
+search_topic = 'boris johnson'
 news_site = ['SKY NEWS UK', 'CNN']
 
 search_function('Positive',search_topic, news_site[0])
